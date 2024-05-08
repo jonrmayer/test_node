@@ -6,10 +6,10 @@ meta:
     Data is queried as needed as the table is sorted or scrolled.
 data:
  
-  roads_geo: { file: /data/vicroads_auspix.parquet }
+  roads_geo: { file: data/vicroads_auspix.parquet }
 
   roads_attributes:
-    file: /data/vic_roads_attributes.parquet   
+    file: data/vic_roads_attributes.parquet   
   roads_core: | 
     select
   
