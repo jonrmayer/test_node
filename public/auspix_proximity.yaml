@@ -5,7 +5,7 @@ meta:
     Click column headers to sort, or command-click to reset the order.
     Data is queried as needed as the table is sorted or scrolled.
 data:
-  victoria_summary_proximity: { file: /data/victoria_summary_proximity.parquet }
+  victoria_summary_proximity: { file: data/victoria_summary_proximity.parquet }
  
   
    
