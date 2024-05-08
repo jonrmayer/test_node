@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mosaic Example Gallery</title>
+  <link href="/styles.css" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <span>
+      Spec:
+      <select id="examples">
+        <option value="none"></option>
+        <option value="vicroads_demo">auspix_vicroads</option>
+        <option value="auspix_summary">auspix_summary</option>
+        <option value="auspix_proximity">auspix_proximity</option>        
+        
+       
+        
+      </select>
+    </span>
+
+    <span>
+      Connector:
+      <select id="connectors">
+        <option value="wasm" selected>WASM</option>
+        <option value="socket">Socket</option>
+        <option value="rest">REST</option>
+      </select>
+    </span>
+
+    <span>
+      Source:
+      <select id="source">
+        <option value="yaml" selected>YAML</option>
+        <option value="esm">JavaScript (ESM)</option>
+      </select>
+    </span>
+  </header>
+  <div id="view"></div>
+<script type="module">
+  import yaml from './node_modules/yaml/browser/index.js';
+  import { astToDOM, astToESM, clear, parseSpec, setDatabaseConnector, vg } from './src/setup.js';
+
+  const view = document.querySelector('#view');
+  const connectorMenu = document.querySelector('#connectors');
+  const exampleMenu = document.querySelector('#examples');
+  const sourceMenu = document.querySelector('#source');
+  connectorMenu.addEventListener('change', setConnector);
+  exampleMenu.addEventListener('change', reload);
+  sourceMenu.addEventListener('change', reload);
+  setConnector();
+
+  async function setConnector() {
+    await setDatabaseConnector(connectorMenu.value);
+    reload();
+  }
+
+  function reload() {
+    load(exampleMenu.value, sourceMenu.value);
+  }
+
+  async function load(name, source) {
+    view.replaceChildren();
+    clear(); // reset coordinator and namedPlot state
+    if (name === 'none' && location.search) {
+      // get example name from query string
+      name = location.search.slice(1);
+    }
+    if (name !== 'none') {
+      const spec = yaml.parse(
+        await fetch(`/${name}.yaml`).then(res => res.text())
+      );
+
+      // provide options for output generation
+      // if using a local server, use baseURL for client-loaded data only
+      const baseURL = location.origin + '/';
+      const options = connectorMenu.value === 'wasm'
+        ? { baseURL }
+        : { baseClientURL: baseURL };
+
+      const ast = parseSpec(spec);
+      const child = source === 'esm'
+        ? await loadModuleView(ast, options)
+        : (await astToDOM(ast, options)).element;
+      view.replaceChildren(child);
+    }
+  }
+
+  async function loadModuleView(spec, options) {
+    const vgplot = new URL('./setup.js', window.location.href).toString();
+    const imports = new Map([[vgplot, ['vg']]]);
+    const code = astToESM(spec, { ...options, imports });
+    console.log(code);
+    const blob = new Blob([code], { type: 'text/javascript' });
+    const url = URL.createObjectURL(blob);
+    return (await import(/* @vite-ignore */ url)).default;
+  }
+</script>
+</body>
+</html>

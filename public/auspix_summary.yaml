@@ -1,0 +1,214 @@
+meta:
+  title: Sortable Table
+  description: >
+    A sortable, "infinite scroll" `table` view over a backing database table.
+    Click column headers to sort, or command-click to reset the order.
+    Data is queried as needed as the table is sorted or scrolled.
+data:
+  victoria_summary: { file: /data/victoria_summary.parquet }  
+  victoria_summary_data: |     
+    select victoria_summary.*,
+    left(id,4) as auspix3,
+    left(id,5) as auspix4     
+    from victoria_summary   
+
+params:
+  brush: { select: crossfilter }
+  bandwidth: 0
+  mycolour: Turbo
+hconcat:
+  - vconcat:
+    - hconcat:
+        - input: menu
+          label: AUSPIX Level 3
+          as: $brush
+          from: victoria_summary_data
+          filterBy: $brush
+          column: auspix3
+        - input: menu
+          label: AUSPIX Level 4
+          as: $brush
+          from: victoria_summary_data
+          filterBy: $brush
+          column: auspix4
+    - vconcat:
+      - hconcat:
+        - plot:
+          - mark: raster
+            data: { from: victoria_summary_data,filterBy: $brush}
+            x: x
+            y: y
+            fill: density
+            weight: road_segments
+            bandwidth: 1
+            interpolate: none      
+          - select: intervalXY
+            as: $brush      
+          colorScheme: $mycolour
+          xAxis: null
+          yAxis: null
+        - vconcat:
+          - vspace: 25
+          - input: menu
+            label: CLUM20
+            as: $brush
+            from: victoria_summary_data
+            filterBy: $brush
+            column: clum18
+          - plot:
+            - mark: barX
+              data: { from: victoria_summary_data, filterBy: $brush }
+              x: { count: total }
+              y: clum18
+              fill: clum18
+              sort: { y: -x, limit: 20 }
+            colorDomain: Fixed
+            colorScheme: blues
+            xLabel: Land Use Data Count
+            xTickFormat: s
+            yLabel: null
+            width: 400
+            height: 300
+            marginTop: 5
+            marginLeft: 200
+        - vconcat:
+          - vspace: 25        
+          - input: menu
+            label: LGA23
+            as: $brush
+            from: victoria_summary_data
+            filterBy: $brush                
+            column: lga23        
+          - plot:
+            - mark: barX
+              data: { from: victoria_summary_data, filterBy: $brush }
+              x: { count: total }
+              y: lga23
+              fill: lga23
+              sort: { y: -x, limit: 20 }
+            colorDomain: Fixed
+            colorScheme: blues
+            xLabel: LGA Data Count
+            xTickFormat: s
+            yLabel: null
+            width: 400
+            height: 300
+            marginTop: 5
+            marginLeft: 200
+        - vconcat:
+          - vspace: 25
+          - input: menu
+            label: AUSFOR23
+            as: $brush
+            from: victoria_summary_data
+            filterBy: $brush
+            column: forest_type
+            marginLeft: 150
+          - plot:
+            - mark: barX
+              data: { from: victoria_summary_data, filterBy: $brush }
+              x: { count: total }
+              y: forest_type
+              fill: forest_type
+              sort: { y: -x, limit: 20 }
+            colorScheme: blues
+            xLabel: Forest Type Data Count
+            xTickFormat: s
+            yLabel: null
+            width: 400
+            height: 300
+            marginTop: 5
+            marginLeft: 200          
+      - hconcat:
+        - plot:      
+          - mark: raster
+            data: { from: victoria_summary_data,filterBy: $brush }
+            x: x
+            y: y
+            fill: density
+            weight: road_segments
+            bandwidth: 1
+            interpolate: none       
+          - mark: text
+            data: [{ label: Road Density }]
+            dx: 10
+            dy: 10
+            text: label
+            fill: white
+            fontSize: 1.2em
+            frameAnchor: top-left       
+          colorScheme: $mycolour
+          xAxis: null
+          yAxis: null
+          
+        - plot:      
+          - mark: raster
+            data: { from: victoria_summary_data,filterBy: $brush }
+            x: x
+            y: y
+            fill: density
+            weight: population
+            bandwidth: 2
+            interpolate: none
+          - mark: text
+            data: [{ label: Population Density }]
+            dx: 10
+            dy: 10
+            text: label
+            fill: white
+            fontSize: 1.2em
+            frameAnchor: top-left  
+          colorScheme: $mycolour
+          xAxis: null
+          yAxis: null
+       
+      
+      - hconcat:
+
+        - plot:      
+          - mark: raster
+            data: { from: victoria_summary_data,filterBy: $brush }
+            x: x
+            y: y
+            fill: density
+            weight: elevation
+            bandwidth: 2
+            interpolate: none
+          - mark: text
+            data: [{ label: Elevation }]
+            dx: 10
+            dy: 10
+            text: label
+            fill: white
+            fontSize: 1.2em
+            frameAnchor: top-left
+          colorScheme: $mycolour
+          xAxis: null
+          yAxis: null
+        - plot:      
+          - mark: raster
+            data: { from: victoria_summary_data,filterBy: $brush }
+            x: x
+            y: y
+            fill: density
+            weight: slope
+            bandwidth: 2
+            interpolate: none
+          - mark: text
+            data: [{ label: Slope }]
+            dx: 10
+            dy: 10
+            text: label
+            fill: white
+            fontSize: 1.2em
+            frameAnchor: top-left
+          colorScheme: $mycolour
+          xAxis: null
+          yAxis: null              
+      - hconcat:
+        - input: table
+          columns: [id,lga23,clum18,forest_type,gnaf_address_count,road_segments,elevation,slope,population]   
+          height: 250
+          from: victoria_summary_data
+          filterBy: $brush
+

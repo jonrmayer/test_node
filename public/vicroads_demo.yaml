@@ -1,0 +1,169 @@
+meta:
+  title: Sortable Table
+  description: >
+    A sortable, "infinite scroll" `table` view over a backing database table.
+    Click column headers to sort, or command-click to reset the order.
+    Data is queried as needed as the table is sorted or scrolled.
+data:
+ 
+  roads_geo: { file: /data/vicroads_auspix.parquet }
+
+  roads_attributes:
+    file: /data/vic_roads_attributes.parquet   
+  roads_core: | 
+    select
+  
+    roads_geo.objectid,
+    roads_geo.x,
+    roads_geo.y,
+    
+    roads_attributes.full_street_name,
+    roads_attributes.hierarchy,
+    roads_attributes.status,roads_attributes.feature_type,roads_attributes.surface
+     from roads_geo,roads_attributes where roads_geo.objectid = roads_attributes.objectid 
+  roads_table2: |
+    select *,count(*) total from roads_core group by *
+
+    
+ 
+params:
+  brush: { select: crossfilter }
+  bandwidth: 0
+
+vconcat:
+  - hconcat:
+    - plot:
+      - mark: frame
+        fill: white
+      - mark: raster
+        data: { from: roads_table2, filterBy: $brush }
+        x: x
+        y: y          
+        bandwidth: 2
+        interpolate: none
+      - select: intervalXY
+        as: $brush        
+      colorScheme: Turbo
+      xAxis: null
+      yAxis: null
+     
+    - plot:        
+      - mark: raster
+        data: { from: roads_table2, filterBy: $brush}
+        x: x
+        y: y          
+        bandwidth: 2
+        interpolate: none  
+       
+      colorScheme: Turbo
+      xAxis: null
+      yAxis: null
+      
+  - hconcat:
+    - vconcat:     
+      - input: menu
+        label: hierarchy
+        as: $brush
+        from: roads_table2
+        column: hierarchy         
+      - plot:
+        - mark: barX
+          data: { from: roads_table2, filterBy: $brush }
+          x: { count: total }
+          y: hierarchy
+          fill: hierarchy
+          sort: { y: -x, limit: 15 }
+      
+        colorDomain: Fixed
+        colorScheme: blues
+        xLabel: Road Objects by Hierarchy
+        xTickFormat: s
+        yLabel: null
+        width: 400
+        height: 300
+        marginTop: 5
+        marginLeft: 125
+        marginBottom: 35
+    - vconcat:
+      - input: menu
+        label: status
+        as: $brush
+        from: roads_table2
+        column: status
+        marginLeft: 125
+      - plot:
+        - mark: barX
+          data: { from: roads_table2, filterBy: $brush }
+          x: { count: total }
+          y: status
+          fill: status
+          sort: { y: -x, limit: 15 }
+      
+        colorDomain: Fixed
+        colorScheme: blues
+        xLabel: Road Objects by Status
+        xTickFormat: s
+        yLabel: null
+        width: 400
+        height: 300
+        marginTop: 5
+        marginLeft: 125
+        marginBottom: 35
+    - vconcat:
+      - input: menu
+        label: feature_type
+        as: $brush
+        from: roads_table2
+        column: feature_type
+        marginLeft: 125
+      - plot:
+        - mark: barX
+          data: { from: roads_table2, filterBy: $brush }
+          x: { count: total }
+          y: feature_type
+          fill: feature_type
+          sort: { y: -x, limit: 15 }
+      
+        colorDomain: Fixed
+        colorScheme: blues
+        xLabel: Road Objects by Feature Type
+        xTickFormat: s
+        yLabel: null
+        width: 400
+        height: 300
+        marginTop: 5
+        marginLeft: 125
+        marginBottom: 35
+    - vconcat:
+      - input: menu
+        label: surface
+        as: $brush
+        from: roads_table2
+        column: surface
+        marginLeft: 125
+      - plot:
+        - mark: barX
+          data: { from: roads_table2, filterBy: $brush }
+          x: { count: total }
+          y: surface
+          fill: surface
+          sort: { y: -x, limit: 15 }
+      
+       
+        colorScheme: blues
+        xLabel: Road Objects by Surface
+        xTickFormat: s
+        yLabel: null
+        width: 400
+        height: 300
+        marginTop: 5
+        marginLeft: 125
+        marginBottom: 35
+  
+  - vconcat: 
+    - input: table 
+      columns: [full_street_name,hierarchy,status,feature_type,surface]   
+      height: 160
+      from: roads_table2
+      filterBy: $brush
+    

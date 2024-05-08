@@ -1,0 +1,164 @@
+meta:
+  title: Sortable Table
+  description: >
+    A sortable, "infinite scroll" `table` view over a backing database table.
+    Click column headers to sort, or command-click to reset the order.
+    Data is queried as needed as the table is sorted or scrolled.
+data:
+  victoria_summary_proximity: { file: /data/victoria_summary_proximity.parquet }
+ 
+  
+   
+
+params:
+  # xs: { select: intersect }
+  # ys: { select: intersect }
+  
+  bandwidth: 0
+  
+
+hconcat: 
+  - vconcat:
+    - hconcat:
+      - plot:
+        - mark: raster
+          data: { from: victoria_summary_proximity, filterBy: $brush}
+          x: x
+          y: y
+          fill: density        
+          pixelsize: 2
+          interpolate: none 
+        colorScheme: blues
+        xAxis: null
+        yAxis: null
+      - vconcat:
+        - vspace: 25
+        - input: menu
+          label: CLUM20
+          as: $brush
+          from: victoria_summary_proximity
+          filterBy: $brush
+          column: clum18
+        - plot:
+          - mark: barX
+            data: { from: victoria_summary_proximity, filterBy: $brush }
+            x: { count: total }
+            y: clum18
+            fill: clum18
+            sort: { y: -x, limit: 20 }
+          colorDomain: Fixed
+          colorScheme: blues
+          xLabel: Land Use Data Count
+          xTickFormat: s
+          yLabel: null
+          width: 400
+          height: 300
+          marginTop: 5
+          marginLeft: 200
+      - vconcat:
+        - vspace: 25
+        - input: menu
+          label: forest_type
+          as: $brush
+          from: victoria_summary_proximity
+          filterBy: $brush
+          column: forest_type
+        - plot:
+          - mark: barX
+            data: { from: victoria_summary_proximity, filterBy: $brush }
+            x: { count: total }
+            y: forest_type
+            fill: forest_type
+            sort: { y: -x, limit: 20 }
+          colorDomain: Fixed
+          colorScheme: blues
+          xLabel: Land Use Data Count
+          xTickFormat: s
+          yLabel: null
+          width: 400
+          height: 300
+          marginTop: 5
+          marginLeft: 200
+      - vconcat:
+        - vspace: 25        
+        - input: menu
+          label: LGA23
+          as: $brush
+          from: victoria_summary_proximity
+          filterBy: $brush                
+          column: lga23        
+        - plot:
+          - mark: barX
+            data: { from: victoria_summary_proximity, filterBy: $brush }
+            x: { count: total }
+            y: lga23
+            fill: lga23
+            sort: { y: -x, limit: 20 }
+          colorDomain: Fixed
+          colorScheme: blues
+          xLabel: LGA Data Count
+          xTickFormat: s
+          yLabel: null
+          width: 400
+          height: 300
+          marginTop: 5
+          marginLeft: 200
+    - hconcat:
+      - plot:
+        - mark: densityY
+          data: { from: victoria_summary_proximity, filterBy: $brush }
+          x: elevation
+          fill: '#00ff00'
+          fillOpacity: 0.5
+          bandwidth: 3
+        - select: intervalX
+          as: $brush
+        yAxis: null
+        xDomain: Fixed
+        width: 600
+        marginLeft: 10
+        height: 200
+      - plot:
+        - mark: densityY
+          data: { from: victoria_summary_proximity, filterBy: $brush }
+          x: slope
+          fill: '#00ff00'
+          fillOpacity: 0.5
+          bandwidth: 3
+        - select: intervalX
+          as: $brush
+        yAxis: null
+        xDomain: Fixed
+        width: 600
+        marginLeft: 10
+        height: 200
+    - hconcat:
+      - plot:
+        - mark: densityY
+          data: { from: victoria_summary_proximity, filterBy: $brush }
+          x: ses
+          fill: '#FFA500'
+          fillOpacity: 0.5
+          bandwidth: 3
+        - select: intervalX
+          as: $brush
+        yAxis: null
+        xDomain: Fixed
+        width: 600
+        marginLeft: 10
+        height: 200
+      - plot:
+        - mark: densityY
+          data: { from: victoria_summary_proximity, filterBy: $brush }
+          x: rcfs
+          fill: '#FFA500'
+          fillOpacity: 0.5
+          bandwidth: 3
+        - select: intervalX
+          as: $brush
+        yAxis: null
+        xDomain: Fixed
+        width: 600
+        marginLeft: 10
+        height: 200
+    
