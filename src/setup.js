@@ -20,7 +20,7 @@ export async function setDatabaseConnector(type, options) {
   let connector;
   switch (type) {
     case 'socket':
-      connector = socketConnector('ws://3.27.89.54:3000//');
+      connector = socketConnector('ws://3.26.104.147:3000//');
       break;
     case 'rest':
       connector = restConnector(options);
